@@ -50,10 +50,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'almas_crm.wsgi.application'
 
+_DB_PATH = '/tmp/db.sqlite3' if os.environ.get('VERCEL') else str(BASE_DIR / 'db.sqlite3')
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': _DB_PATH,
     }
 }
 
