@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard — Almas CRM{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stat Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="stat-icon" style="background:#FEF3C7"><span style="color:#92400E;font-size:22px">🏪</span></div>
+      </div>
+      <div class="stat-value">{{ total_restaurants }}</div>
+      <div class="stat-label">Active Restaurants</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="stat-icon" style="background:#DBEAFE"><span style="font-size:22px">📦</span></div>
+      </div>
+      <div class="stat-value">{{ total_orders }}</div>
+      <div class="stat-label">Total Orders</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="stat-icon" style="background:#D1FAE5"><span style="font-size:22px">✅</span></div>
+      </div>
+      <div class="stat-value">{{ delivered_today }}</div>
+      <div class="stat-label">Delivered Today</div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-xl-3">
+    <div class="stat-card">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="stat-icon" style="background:#F3E8FF"><span style="font-size:22px">💰</span></div>
+      </div>
+      <div class="stat-value">{{ revenue_this_month|floatformat:0 }} MAD</div>
+      <div class="stat-label">Revenue (30 days)</div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <!-- Client Breakdown -->
+  <div class="col-xl-4">
+    <div class="card h-100">
+      <div class="card-header py-3 px-4">Client Breakdown</div>
+      <div class="card-body px-4">
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><span class="badge badge-vip rounded-pill me-2">VIP</span></span>
+          <strong>{{ vip_count }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><span class="badge badge-regular rounded-pill me-2">Regular</span></span>
+          <strong>{{ regular_count }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><span class="badge badge-new rounded-pill me-2">New</span></span>
+          <strong>{{ new_count }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2 border-bottom">
+          <span><span class="badge badge-inactive rounded-pill me-2">Inactive</span></span>
+          <strong>{{ inactive_count }}</strong>
+        </div>
+        <div class="d-flex justify-content-between align-items-center py-2">
+          <span><span class="badge badge-lead rounded-pill me-2">Leads</span></span>
+          <strong>{{ lead_count }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="col-xl-8">
+    <div class="row g-3">
+      {% if churn_risk %}
+      <div class="col-12">
+        <div class="alert-churn p-3">
+          <div class="fw-600 mb-2" style="font-weight:600">⚠️ Churn Risk — {{ churn_risk.count }} restaurant{{ churn_risk.count|pluralize }}</div>
+          {% for r in churn_risk %}
+          <div class="d-flex justify-content-between align-items-center py-1">
+            <a href="{% url 'restaurant_detail' r.pk %}" class="text-decoration-none text-dark fw-500">{{ r.name }}</a>
+            <span class="text-muted small">{{ r.days_since_last_order }} days since last order</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if low_stock %}
+      <div class="col-12">
+        <div class="alert-stock p-3">
+          <div class="fw-600 mb-2" style="font-weight:600">🔴 Low Stock — {{ low_stock.count }} product{{ low_stock.count|pluralize }}</div>
+          {% for p in low_stock %}
+          <div class="d-flex justify-content-between align-items-center py-1">
+            <span class="text-dark">{{ p.name }}</span>
+            <span class="text-danger small fw-600">{{ p.stock_kg }} kg left</span>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if not churn_risk and not low_stock %}
+      <div class="col-12">
+        <div class="card">
+          <div class="card-body text-center text-muted py-5">
+            <div style="font-size:40px">✅</div>
+            <div class="mt-2">No alerts — everything looks good!</div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Recent Orders -->
+<div class="card">
+  <div class="card-header py-3 px-4 d-flex justify-content-between align-items-center">
+    <span>Recent Orders</span>
+    <a href="{% url 'order_list' %}" class="btn btn-sm btn-outline-secondary">View All</a>
+  </div>
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr class="border-bottom">
+          <th class="ps-4 py-3">Order</th>
+          <th>Restaurant</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in recent_orders %}
+        <tr>
+          <td class="ps-4 py-3 fw-600">#{{ order.pk }}</td>
+          <td>{{ order.restaurant }}</td>
+          <td>{{ order.total_amount|floatformat:0 }} MAD</td>
+          <td>
+            <span class="badge rounded-pill
+              {% if order.status == 'delivered' %}bg-success
+              {% elif order.status == 'pending' %}bg-warning text-dark
+              {% elif order.status == 'confirmed' %}bg-primary
+              {% elif order.status == 'out_for_delivery' %}bg-info
+              {% else %}bg-secondary{% endif %}">
+              {{ order.get_status_display }}
+            </span>
+          </td>
+          <td class="text-muted small">{{ order.date_created|date:"d M Y" }}</td>
+          <td><a href="{% url 'order_detail' order.pk %}" class="btn btn-sm btn-outline-secondary">View</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" class="text-center text-muted py-4">No orders yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

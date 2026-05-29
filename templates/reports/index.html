@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}Reports — Almas CRM{% endblock %}
+{% block page_title %}Reports{% endblock %}
+
+{% block content %}
+<!-- Revenue Card -->
+<div class="row g-3 mb-4">
+  <div class="col-md-4">
+    <div class="stat-card">
+      <div class="stat-icon mb-3" style="background:#FEF3C7"><span style="font-size:22px">💰</span></div>
+      <div class="stat-value">{{ monthly_revenue|floatformat:0 }} MAD</div>
+      <div class="stat-label">Revenue — Last 30 Days</div>
+    </div>
+  </div>
+  {% for status, count in orders_by_status.items %}
+  <div class="col-md-4 col-lg-2">
+    <div class="stat-card text-center">
+      <div class="stat-value">{{ count }}</div>
+      <div class="stat-label">{{ status|capfirst|replace:"_"," " }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="row g-4">
+  <!-- Top Restaurants -->
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header py-3 px-4">🏆 Top Restaurants by Spending</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr class="border-bottom">
+              <th class="ps-4 py-3">#</th>
+              <th>Restaurant</th>
+              <th>Total Spent</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in top_restaurants %}
+            {% if r.spent %}
+            <tr>
+              <td class="ps-4 py-3 text-muted">{{ forloop.counter }}</td>
+              <td><a href="{% url 'restaurant_detail' r.pk %}" class="text-decoration-none text-dark fw-600">{{ r.name }}</a></td>
+              <td class="fw-700" style="color:#C9A84C">{{ r.spent|floatformat:0 }} MAD</td>
+            </tr>
+            {% endif %}
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-4">No data yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Products -->
+  <div class="col-xl-6">
+    <div class="card">
+      <div class="card-header py-3 px-4">🌶️ Most Ordered Products</div>
+      <div class="card-body p-0">
+        <table class="table mb-0">
+          <thead>
+            <tr class="border-bottom">
+              <th class="ps-4 py-3">#</th>
+              <th>Product</th>
+              <th>Total (kg)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in top_products %}
+            <tr>
+              <td class="ps-4 py-3 text-muted">{{ forloop.counter }}</td>
+              <td class="fw-600">{{ item.product__name }}</td>
+              <td>{{ item.total_kg|floatformat:1 }} kg</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="3" class="text-center text-muted py-4">No order items yet</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

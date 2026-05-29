@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+{% block title %}Orders — Almas CRM{% endblock %}
+{% block page_title %}Orders{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <form class="d-flex gap-2" method="get">
+    <select name="status" class="form-select" style="width:200px" onchange="this.form.submit()">
+      <option value="">All Status</option>
+      {% for val, label in status_choices %}
+      <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if status_filter %}<a href="{% url 'order_list' %}" class="btn btn-outline-secondary">Clear</a>{% endif %}
+  </form>
+  <a href="{% url 'order_create' %}" class="btn btn-gold"><i class="bi bi-plus-lg me-1"></i>New Order</a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr class="border-bottom">
+          <th class="ps-4 py-3">Order #</th>
+          <th>Restaurant</th>
+          <th>Amount</th>
+          <th>Status</th>
+          <th>Driver</th>
+          <th>Payment</th>
+          <th>Date</th>
+          <th>Navigate</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td class="ps-4 py-3 fw-600">#{{ order.pk }}</td>
+          <td>
+            {% if order.restaurant %}
+            <a href="{% url 'restaurant_detail' order.restaurant.pk %}" class="text-decoration-none text-dark">
+              {{ order.restaurant.name }}
+            </a>
+            {% else %}—{% endif %}
+          </td>
+          <td class="fw-600">{{ order.total_amount|floatformat:0 }} MAD</td>
+          <td>
+            <span class="badge rounded-pill
+              {% if order.status == 'delivered' %}bg-success
+              {% elif order.status == 'pending' %}bg-warning text-dark
+              {% elif order.status == 'confirmed' %}bg-primary
+              {% elif order.status == 'out_for_delivery' %}bg-info
+              {% else %}bg-secondary{% endif %}">
+              {{ order.get_status_display }}
+            </span>
+          </td>
+          <td class="text-muted small">{{ order.driver_name|default:"—" }}</td>
+          <td>
+            {% if order.payment_collected %}
+              <span class="text-success small fw-600">✓ Collected</span>
+            {% else %}
+              <span class="text-muted small">Pending</span>
+            {% endif %}
+          </td>
+          <td class="text-muted small">{{ order.date_created|date:"d M Y" }}</td>
+          <td>
+            {% if order.restaurant and order.restaurant.waze_url %}
+            <a href="{{ order.restaurant.waze_url }}" target="_blank" class="btn btn-sm waze-btn">
+              <i class="bi bi-navigation-fill"></i>
+            </a>
+            {% else %}—{% endif %}
+          </td>
+          <td>
+            <a href="{% url 'order_detail' order.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+            <a href="{% url 'order_edit' order.pk %}" class="btn btn-sm btn-outline-primary">Edit</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-5">No orders found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

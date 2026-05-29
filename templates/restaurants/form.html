@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }} — Almas CRM{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width:720px">
+  <div class="card-body p-4">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label class="form-label fw-500">Restaurant Name *</label>
+          <input type="text" name="name" value="{{ form.name.value|default:'' }}" class="form-control" required>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Owner Name</label>
+          <input type="text" name="owner_name" value="{{ form.owner_name.value|default:'' }}" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Phone</label>
+          <input type="text" name="phone" value="{{ form.phone.value|default:'' }}" class="form-control">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Email</label>
+          <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="form-control">
+        </div>
+        <div class="col-md-8">
+          <label class="form-label fw-500">Address</label>
+          <textarea name="address" class="form-control" rows="2">{{ form.address.value|default:'' }}</textarea>
+        </div>
+        <div class="col-md-4">
+          <label class="form-label fw-500">City</label>
+          <input type="text" name="city" value="{{ form.city.value|default:'Casablanca' }}" class="form-control">
+        </div>
+
+        <div class="col-12"><hr class="my-1"><small class="text-muted">GPS Location (for Waze navigation)</small></div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Latitude</label>
+          <input type="number" step="any" name="latitude" value="{{ form.latitude.value|default:'' }}" class="form-control" placeholder="e.g. 33.5731">
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Longitude</label>
+          <input type="number" step="any" name="longitude" value="{{ form.longitude.value|default:'' }}" class="form-control" placeholder="e.g. -7.5898">
+        </div>
+        <div class="col-12">
+          <small class="text-muted">
+            <i class="bi bi-info-circle"></i>
+            To get coordinates: open Google Maps, right-click the restaurant location, and copy the numbers shown.
+          </small>
+        </div>
+
+        <div class="col-12"><hr class="my-1"></div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Status</label>
+          <select name="status" class="form-select">
+            {% for val, label in form.fields.status.choices %}
+            <option value="{{ val }}" {% if form.status.value == val %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="col-md-6">
+          <label class="form-label fw-500">Preferred Delivery Day</label>
+          <input type="text" name="preferred_delivery_day" value="{{ form.preferred_delivery_day.value|default:'' }}" class="form-control" placeholder="e.g. Monday, Thursday">
+        </div>
+        <div class="col-12">
+          <label class="form-label fw-500">Internal Notes</label>
+          <textarea name="notes" class="form-control" rows="3" placeholder="Any notes about this restaurant...">{{ form.notes.value|default:'' }}</textarea>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 mt-4">
+        <button type="submit" class="btn btn-gold px-4">Save Restaurant</button>
+        <a href="{% url 'restaurant_list' %}" class="btn btn-outline-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block title %}Products — Almas CRM{% endblock %}
+{% block page_title %}Products{% endblock %}
+
+{% block content %}
+{% if low_stock %}
+<div class="alert-stock p-3 mb-4 d-flex align-items-center gap-3">
+  <span style="font-size:24px">🔴</span>
+  <div>
+    <strong>Low Stock Alert:</strong>
+    {% for p in low_stock %}{{ p.name }} ({{ p.stock_kg }}kg){% if not forloop.last %}, {% endif %}{% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="d-flex justify-content-end mb-4">
+  <a href="{% url 'product_create' %}" class="btn btn-gold"><i class="bi bi-plus-lg me-1"></i>Add Product</a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr class="border-bottom">
+          <th class="ps-4 py-3">Product</th>
+          <th>Arabic Name</th>
+          <th>Category</th>
+          <th>Price/kg</th>
+          <th>Stock (kg)</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td class="ps-4 py-3 fw-600">{{ p.name }}</td>
+          <td class="text-muted" dir="rtl">{{ p.name_ar|default:"—" }}</td>
+          <td>{{ p.get_category_display }}</td>
+          <td>{{ p.price_per_kg|floatformat:2 }} MAD</td>
+          <td>
+            <span class="{% if p.is_low_stock %}text-danger fw-700{% endif %}">
+              {{ p.stock_kg }} kg
+              {% if p.is_low_stock %}<span class="badge bg-danger ms-1">Low</span>{% endif %}
+            </span>
+          </td>
+          <td>
+            {% if p.is_active %}<span class="badge bg-success">Active</span>
+            {% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}
+          </td>
+          <td><a href="{% url 'product_edit' p.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" class="text-center text-muted py-5">No products yet</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

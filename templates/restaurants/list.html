@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Restaurants — Almas CRM{% endblock %}
+{% block page_title %}Restaurants{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <form class="d-flex gap-2" method="get">
+    <input type="text" name="q" value="{{ search }}" class="form-control" placeholder="Search restaurants..." style="width:240px">
+    <select name="status" class="form-select" style="width:160px" onchange="this.form.submit()">
+      <option value="">All Status</option>
+      {% for val, label in status_choices %}
+      <option value="{{ val }}" {% if status_filter == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <button class="btn btn-outline-secondary" type="submit">Search</button>
+    {% if search or status_filter %}<a href="{% url 'restaurant_list' %}" class="btn btn-outline-danger">Clear</a>{% endif %}
+  </form>
+  <a href="{% url 'restaurant_create' %}" class="btn btn-gold"><i class="bi bi-plus-lg me-1"></i>Add Restaurant</a>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <table class="table mb-0">
+      <thead>
+        <tr class="border-bottom">
+          <th class="ps-4 py-3">Restaurant</th>
+          <th>Owner</th>
+          <th>Phone</th>
+          <th>City</th>
+          <th>Status</th>
+          <th>Last Order</th>
+          <th>Total Spent</th>
+          <th>Location</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in restaurants %}
+        <tr>
+          <td class="ps-4 py-3">
+            <a href="{% url 'restaurant_detail' r.pk %}" class="fw-600 text-decoration-none text-dark">{{ r.name }}</a>
+          </td>
+          <td class="text-muted">{{ r.owner_name|default:"—" }}</td>
+          <td>{{ r.phone|default:"—" }}</td>
+          <td>{{ r.city|default:"—" }}</td>
+          <td>
+            <span class="badge rounded-pill badge-{{ r.status }}">{{ r.get_status_display }}</span>
+          </td>
+          <td class="text-muted small">
+            {% if r.last_order_date %}{{ r.last_order_date|date:"d M Y" }}{% else %}Never{% endif %}
+          </td>
+          <td class="fw-600">{{ r.total_spent|floatformat:0 }} MAD</td>
+          <td>
+            {% if r.waze_url %}
+            <a href="{{ r.waze_url }}" target="_blank" class="btn btn-sm waze-btn">
+              <i class="bi bi-navigation-fill me-1"></i>Waze
+            </a>
+            {% else %}
+            <span class="text-muted small">No GPS</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'restaurant_detail' r.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="9" class="text-center text-muted py-5">No restaurants found</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
