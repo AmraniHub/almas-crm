@@ -7,7 +7,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'almas-crm-dev-key-change-in-productio
 
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+VERCEL = os.environ.get('VERCEL', '')
+
+# Lock down hosts in production
+_ALLOWED = os.environ.get('ALLOWED_HOSTS', '')
+ALLOWED_HOSTS = [h.strip() for h in _ALLOWED.split(',') if h.strip()] if _ALLOWED else ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -50,14 +54,22 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'almas_crm.wsgi.application'
 
-_DB_PATH = '/tmp/db.sqlite3' if os.environ.get('VERCEL') else str(BASE_DIR / 'db.sqlite3')
+# ─── DATABASE ────────────────────────────────────────────
+# Priority: DATABASE_URL env (Neon PostgreSQL) → SQLite fallback
+DATABASE_URL = os.environ.get('DATABASE_URL', '')
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': _DB_PATH,
+if DATABASE_URL:
+    import dj_database_url
+    DATABASES = {'default': dj_database_url.parse(DATABASE_URL, conn_max_age=600)}
+else:
+    _DB_PATH = '/tmp/db.sqlite3' if VERCEL else str(BASE_DIR / 'db.sqlite3')
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': _DB_PATH,
+        }
     }
-}
+# ─────────────────────────────────────────────────────────
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

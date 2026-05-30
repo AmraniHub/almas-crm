@@ -1,11 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
-from django.db.models import Sum, Count, Q
-from django.http import JsonResponse
+from django.db.models import Sum, Count, Q, FloatField
+from django.db.models.functions import Coalesce
+from django.core.paginator import Paginator
 from .models import Restaurant, Product, Order, OrderItem, Note, ChatMessage
 from .forms import RestaurantForm, ProductForm, OrderForm, NoteForm, ChatMessageForm
-import json
 from datetime import timedelta
 
 
@@ -67,7 +67,13 @@ def restaurant_list(request):
     status_filter = request.GET.get('status', '')
     search = request.GET.get('q', '')
 
-    restaurants = Restaurant.objects.all()
+    restaurants = Restaurant.objects.annotate(
+        _total_spent=Coalesce(
+            Sum('orders__total_amount', filter=Q(orders__status='delivered')),
+            0.0, output_field=FloatField()
+        ),
+        _total_orders=Count('orders'),
+    )
     if status_filter:
         restaurants = restaurants.filter(status=status_filter)
     if search:
@@ -76,6 +82,9 @@ def restaurant_list(request):
         )
 
     restaurants = restaurants.order_by('-date_registered')
+
+    paginator = Paginator(restaurants, 25)
+    restaurants = paginator.get_page(request.GET.get('page', 1))
 
     context = {
         'restaurants': restaurants,
@@ -165,6 +174,8 @@ def order_list(request):
     orders = Order.objects.select_related('restaurant').order_by('-date_created')
     if status_filter:
         orders = orders.filter(status=status_filter)
+    paginator = Paginator(orders, 30)
+    orders = paginator.get_page(request.GET.get('page', 1))
     context = {
         'orders': orders,
         'status_filter': status_filter,
